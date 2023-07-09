@@ -134,6 +134,33 @@ app.post("/barcode", async (req, res) => {
   console.log(`Doc Complete`);
 });
 
+// Function to place a barcode at the specified position
+async function placeBarcode(doc, x, y, id, options) {
+  return new Promise((resolve, reject) => {
+    // Generate the barcode using bwip-js
+    bwipjs.toBuffer(
+      {
+        bcid: "code128", // Barcode type
+        text: id, // ID to be encoded
+        scale: 2, // Size of the barcode
+        height: 10, // Height of the barcode
+        includetext: true, // Include the ID as text below the barcode
+        textxalign: "center", // Center-align the text
+        rotate: "L", // Rotate 90 degrees clockwise (use 'L' for counterclockwise)
+      },
+      (err, png) => {
+        if (err) {
+          reject(err);
+        } else {
+          // Embed the barcode PNG image in the PDF document
+          doc.image(png, x, y, { scale: 0.3 });
+          resolve();
+        }
+      }
+    );
+  });
+}
+
 // Function to draw grid lines on the document
 function drawGrid(doc, options) {
   const {
@@ -160,33 +187,6 @@ function drawGrid(doc, options) {
   }
 
   doc.restore();
-}
-
-// Function to place a barcode at the specified position
-async function placeBarcode(doc, x, y, id, options) {
-  return new Promise((resolve, reject) => {
-    // Generate the barcode using bwip-js
-    bwipjs.toBuffer(
-      {
-        bcid: "code128", // Barcode type
-        text: id, // ID to be encoded
-        scale: 2, // Size of the barcode
-        height: 10, // Height of the barcode
-        includetext: true, // Include the ID as text below the barcode
-        textxalign: "center", // Center-align the text
-        rotate: "L", // Rotate 90 degrees clockwise (use 'L' for counterclockwise)
-      },
-      (err, png) => {
-        if (err) {
-          reject(err);
-        } else {
-          // Embed the barcode PNG image in the PDF document
-          doc.image(png, x, y, { scale: 0.3 });
-          resolve();
-        }
-      }
-    );
-  });
 }
 
 app.listen(PORT, () => {
